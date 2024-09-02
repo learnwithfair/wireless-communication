@@ -1,0 +1,290 @@
+########## 1 ########
+
+
+clc;
+clear all;
+close all;
+cluster_sizes = input('Enter Cluster Sizes with [ ] around Them :');  % Such as [4 7 12]
+ 
+bw = 30000;                                         % Total Bandwidth in kHz
+sim_ch_bw = 25;                                 % Simplex channel bandwidth in kHz
+dup_ch_bw = 2*sim_ch_bw;              % Duplex channel bandwidth in kHz
+ 
+t_ch = (bw/dup_ch_bw);                     % Total available channels
+ 
+cc_bw = 1000;                                     % Control channel bandwidth
+t_cc = cc_bw/dup_ch_bw;                  % The number of available control 
+ 
+for N = cluster_sizes
+   
+    % Calculate Desired Result For each system uses                  
+    ch_per_cell = round(t_ch/N);       % Channels available per cell   
+    vc = round((t_ch-t_cc)/N);           % Voice channel    
+    cc = ch_per_cell-vc;                     % Control channel
+      
+    % Result Print
+    fprintf('For Cluster size N = %d\n',N);
+    disp('-------------------------');
+    fprintf('Total number of channels available per cell : %d channels\n',ch_per_cell);    
+    fprintf('Voice Cannel : %d channels\n',vc);
+    fprintf('Control Cannel : %d channels\n',cc);  
+    fprintf('\n\n');
+end
+
+
+################ 2 ########
+
+
+clc;
+clear all;
+close all;
+ 
+pl_exponent = input('Enter Path Loss exponent with [ ] around Them :');       % Such as [4 3]
+r_si = 15;                                                        % Minimum Required S/I in dB
+i0 = 6;                                                             % The number of Co-channel interfering cells
+for n = pl_exponent     
+    N = 7;                                                          % Cluster size
+    
+    % Calculate Result
+    Q = sqrt(3*N);                                             % Frequency reuse factor   
+    si = 10*(log10((Q^n)/i0));                           % Signal to interference ratio in dB
+    
+    % If First Condition is Not Satisfied
+    if (si<r_si)
+        i = 2; j = 2;
+        N = (i*i)+(i*j)+(j*j);
+        Q = sqrt(3*N);
+        si = 10*(log10((Q^n)/i0));        
+    end
+    
+    % Result Print
+    fprintf('For Path Loss Exponent, n = %d\n',n);
+    disp('---------------------------');
+    fprintf('Signal-to-Noise interference Ratio S/I: %7.3f dB > %d dB\n',si,r_si); 
+    fprintf('Hence, Cluster size N: %d\n',N);    
+    fprintf('Frequency Reuse Factor Q: %7.3f\n',Q);    
+    fprintf('\n\n');
+end
+
+
+########## 3 ########### 
+
+clc;
+clear all;
+close all;
+GOS = 0.5/100;      % Blocking probablity (0.5%)
+Au = 0.1;           % Traffic intensity per user
+ 
+% From Erlang B chart Offered Traffic Intensity, A
+A = [0.005 1.13 3.96 11.1 80.9]; 
+% Trunked Channels
+C = [1 5 10 20 100];  
+ 
+U = round(A/Au); % Total number of user
+ 
+% Result Print
+fprintf('Grade of Service, GOS = %7.3f\n',GOS);
+disp('Trunked Channels, C :');
+disp(C);
+disp('From table 3.1, we obtain Offered Traffic Intensity, A For all Channels, C :');
+disp(A);
+disp('Total number of user, U'); 
+disp('---------------------------');
+disp(U);
+
+
+############### 4 ###########
+
+clc;
+clear all;
+close all;
+blocking_probability = 2/100;    % GOS
+population = 2000000;
+Au = (2/60)*3;                   % Traffic intensity per user
+disp('For system A:');
+disp('--------------');
+C1 = 19;                             % Number of channels per cell 
+A1 = 12;                             % Total traffic intensity from erlang B chart, GOS=0.02, C=19
+U1 = A1/Au;                      % Total number of user
+Aa = U1*394;                     % Total Number of Subscriber
+percentage_A = (Aa/population)*100;
+fprintf('Total number of users for system A: %d\n',Aa);
+fprintf('Percentage market penetration for System A: %7.3f%% \n',percentage_A);
+ 
+fprintf('\n\nFor system B:\n');
+disp('--------------');
+C2 = 57;                             % Number of channels per cell 
+A2 = 45;                             % Total traffic intensity from erlang B chart, GOS=0.02, C=57
+U2 = A2/Au;                      % Total number of user
+Bb = U2*98;                      % Total Number of Subscriber
+percentage_B = (Bb/population)*100;
+ 
+fprintf('Total number of users for system B: %d\n',Bb);
+fprintf('Percentage market penetration for System B: %7.3f%% \n',percentage_B);
+ 
+fprintf('\n\nFor system C:\n');
+disp('--------------');
+C3 = 100;                           % Number of channels per cell 
+A3 = 88;                             % Total traffic intensity from erlang B chart, GOS=0.02, C=100
+U3 = A3/Au;                      % Total number of user
+Cc = U3*49;                       % Total Number of Subscriber
+percentage_C = (Cc/2000000)*100;
+ 
+fprintf('Total number of users for system C: %d\n',Cc);
+fprintf('Percentage market penetration for System C: %7.3f%% \n',percentage_C);
+ 
+fprintf('\n\nFor all three systems:\n');
+disp('--------------------');
+ 
+T = Aa+Bb+Cc; % Total Subscribers
+percentage_T = (T/2000000)*100;
+fprintf('Total number of users of all three system: %d\n',T);
+fprintf('Percentage market penetration for all three System: %7.3f%% \n',percentage_T);
+
+
+########## 5 ##########
+
+clc;
+clear all;
+close all;
+c = 3*(10^8);                                                        % Velocity of light, c
+f = 900*(10^6);
+D = 1;                                                                   % Maximum Dimension, D
+lemda = (c/f);                                                        % Wavelength,, lamda
+df = 2*(D^2)/(lemda);                                          % Fraungofer distance, df
+pl = -10*log10((lemda^2)/(((4*pi)^2)*(df^2)));  % Path loss, Pl(dB)
+fprintf('Fraunhofer distance, Df: %.2f m\n',df)
+fprintf('Path Loss PL(dB) : %.2f dB\n',pl);
+
+########## 6 #########
+clc;
+clear all;
+close all;
+
+fc = 900*10^6;                                      % Carrier Frequency, fc
+wavelength = (3*10^8)/(900*10^6);    % Wavelength
+v = 70*(1000/(60*60));                        % Vehicle speed, v
+
+%  Solution (a) 
+The_received_frequency_of_A_is = (floor(fc)+(v/wavelength))/10^6;
+fprintf('a) The received frequency of A is: %.6f MHz\n\n',The_received_frequency_of_A_is);
+
+% Solution (b)
+The_received_frequency_of_B_is = (floor(fc)-(v/wavelength))/10^6;
+fprintf('b) The received frequency of B is: %f MHz\n\n',The_received_frequency_of_B_is);
+
+% Solution (c)
+disp('c) The received signal frequency is the same of the transmitted frequency 900 MHz');
+
+
+########### 7  ##########
+clc;
+clear all;
+close all;
+
+% Solution (a)
+Tn = 150;
+N = 70;
+delT = Tn/N;
+fprintf('a) delT = %.2f micro_s\n\n',delT);
+
+% Solution (b)
+Tn = 4;
+MBW = 2/delT;
+fprintf('b)\nThe maximum bandwidth that the SMRCIM model can accurately represent = %.3f MHz\n',MBW);
+Tn = 4;
+delT = (Tn/N)*1000;
+RFBW = (2/delT)*1000;
+fprintf('delT for SMRCIM urban mircrocell model is %.3f ns\n',delT);
+fprintf('The maximum RF bandwidth that can be represented is %.2f MHz\n\n',RFBW);
+
+% Solution (c)
+Exdel = 500;
+delT = Exdel/N;
+disp('c)')
+fprintf('For indoor channel %f ns\n',delT);
+RFBW = (2/delT)*1000;
+fprintf('The maximum RF bandwidth for the indoor channel model is %.2f MHz\n',RFBW);
+
+
+########## 8 ##########
+clc;
+clear all;
+close all;
+Am_signal_power = 400; %unit in KW
+modulation_depth = 0.75;
+carrier_power_pc = (Am_signal_power)/(1+((modulation_depth)^2)/2);
+fprintf('Carrier power Pc: %.2f KW\n',carrier_power_pc);
+
+total_power = (carrier_power_pc/Am_signal_power)*100;
+fprintf('a) Total power in the carrier is: %.2f%%\n',total_power)
+
+power_in_each_sideband = (Am_signal_power-carrier_power_pc)*0.5;
+fprintf('b) Power in each sideband: %.2f KW\n',power_in_each_sideband)
+
+percentage_power = (1-(power_in_each_sideband)/Am_signal_power)*100;
+fprintf('c) Percentage power saving: %.2f%%\n',percentage_power)
+########## 9 ##########
+clc;
+clear all;
+close all
+Fm = 4; %unit in kHz
+mt_max_value = 8; %unit in V
+womeca = 10; %unit in kHz/V
+
+peak_deviation_delta_f = mt_max_value*womeca;
+fprintf('a) Peak deviation delta_f: %d KHz\n',peak_deviation_delta_f)
+
+fre_modu_index_Bf=(peak_deviation_delta_f/Fm);
+fprintf('b) Frequency modulation index Bf: %d\n',fre_modu_index_Bf)
+
+phase_modulation_index = womeca*mt_max_value;
+fprintf('c) Phase modulation index: %d radians\n',phase_modulation_index)
+########## 10 ##########
+clc;
+clear all;
+close all;
+trans_data = 270.833; %unit in kbps
+each_time_slot_bit = 156.25; %unit in bits
+num_of_time_slot = 8;
+
+time_duration_of_a_bit_Tb= (1/trans_data)*10^3;
+fprintf('a) Time duration of a bit Tb: %.4f micro-second\n',time_duration_of_a_bit_Tb);
+
+time_duration_of_a_slot_Ts = (each_time_slot_bit*time_duration_of_a_bit_Tb);
+fprintf('b) Time duration of a slot Ts: %.2f ms\n',time_duration_of_a_slot_Ts);
+
+time_duration_of_a_frame_Tf = (time_duration_of_a_slot_Ts*num_of_time_slot);
+fprintf('c) Time duration of a frame Tf: %.3f ms\n',time_duration_of_a_frame_Tf);
+
+disp('d) A user has to wait 4.615 ms, the arrival time of a new frame for its next transmission.');
+########## 11 ##########
+clc;
+clear all;
+close all;
+trans_freq = 270.833; %unit in kbps
+num_of_bit_in_each_time_slot = 6+(8.25)+26+(2*58);
+fprintf('A time slot has: %.2f bits\n',num_of_bit_in_each_time_slot);
+
+Boh= (8*6)+(8*8.25)+(8*26);
+fprintf('a) Number of overhead bits Boh: %.2f bits\n',Boh)
+
+num_of_bit_per_frame = (8*num_of_bit_in_each_time_slot);
+fprintf('b) Number of bits per frame: %.2f bits/frame\n',num_of_bit_per_frame);
+
+frame_rate = (trans_freq/num_of_bit_per_frame)*1000;
+fprintf('c) Frame rate: %.2f frame/sec\n',frame_rate);
+
+time_duration_of_a_slot = (num_of_bit_in_each_time_slot)*(1/trans_freq)*1000;
+fprintf('d) Time duration of a slot: %.2f micro_second\n',time_duration_of_a_slot);
+
+frame_efficiency = (1-(Boh)/num_of_bit_per_frame)*100;
+fprintf('e) Frame Efficiency: %.2f%%\n',frame_efficiency);
+
+
+
+
+
+
+
+
